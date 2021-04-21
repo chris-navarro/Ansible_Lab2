@@ -1,0 +1,38 @@
+---
+
+- name: Configuring P2P for NXOS SW1 to R3R4
+  hosts: nxos
+  gather_facts: false
+  connection: network_cli
+
+  vars:
+    ansible_network_os: nxos
+    ansible_python_interpreter: python3
+    ansible_user: admin
+    ansible_password: admin
+    timeout: 100
+
+  tasks:
+  - name: Configuring Layer IPv4 address SW1 to R3
+    nxos_config:
+      lines:
+        - no switchport
+        - description ^P2P to R3
+        - ip add 169.10.10.38/30
+        - no shutdown
+      parents: interface Ethernet1/2
+  
+  - name: Configuring Layer IPv4 address SW1 to R4
+    nxos_config:
+      lines:
+        - no switchport
+        - description ^P2P to R4
+        - ip add 169.10.10.42/30
+        - no shutdown
+      parents: interface Ethernet1/3
+
+      save_when: modified   
+
+    register: print_output
+      
+  - debug: var=print_output

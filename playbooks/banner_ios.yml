@@ -1,0 +1,26 @@
+---
+
+- name: Configuring Banner MOTD for IOS
+  hosts: switches_ios
+  gather_facts: false
+  connection: network_cli
+
+  vars:
+    ansible_network_os: ios
+    ansible_python_interpreter: python3
+    ansible_user: admin
+    ansible_password: admin
+    timeout: 100
+
+  tasks:
+  - name: IOS Switches Banner MOTD
+    ios_config:
+      lines:
+      -  banner motd &********* THIS IS A PRIVATE NETWORK. ONLY AUTHORIZED PERSONNEL CAN DEPLOY CHANGES, UNATHORIZED USERS WILL BE PROSECUTED!*******&
+
+      save_when: modified
+
+    register: print_output
+      
+  - debug: var=print_output
+       

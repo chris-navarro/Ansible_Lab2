@@ -1,0 +1,34 @@
+---
+
+- name: OSPF Removal for R1 and R2
+  hosts: R1,R2
+  gather_facts: false
+  connection: network_cli
+
+  vars:
+    ansible_network_os: ios
+    ansible_python_interpreter: python3
+    ansible_user: admin
+    ansible_password: admin
+    timeout: 100
+
+  tasks:
+  - name: OSPF removal on the int fa0/0
+    ios_config:
+      lines: 
+      - no ip ospf 1 area 0
+
+      parents: interface FastEthernet0/0
+
+  - name:   OSPF removal on Global Config
+    ios_config:
+      lines:
+      - no router ospf 64000
+      - no router ospf 1 vrf MGT
+
+      save_when: modified
+
+    register: print_output
+      
+  - debug: var=print_output
+       

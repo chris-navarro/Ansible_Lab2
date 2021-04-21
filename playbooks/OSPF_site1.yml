@@ -1,0 +1,110 @@
+---
+
+- name: Configuring OSPF for NXOS SW1 to R3R4
+  hosts: SW1
+  gather_facts: false
+  connection: network_cli
+
+  vars:
+    ansible_network_os: nxos
+    ansible_python_interpreter: python3
+    ansible_user: admin
+    ansible_password: admin
+    timeout: 100
+
+  tasks:
+  - name: Configuring loopback0 on SW1
+    nxos_config:
+      lines:
+        - interface loopback0
+        - ip address 7.7.7.7/32
+        - no shutdown
+      parents: interface loopback0
+      save_when: modified
+  
+  - name: Configuring E1/2 on SW1
+    nxos_config:
+      lines:
+        - ip router ospf 64500 area 0
+        - no ip ospf passive-interface
+
+      parents: interface Ethernet1/2
+      save_when: modified
+    
+  - name: Configuring E1/3 on SW1
+    nxos_config:
+      lines:
+        - ip router ospf 64500 area 0
+        - no ip ospf passive-interface
+        
+      parents: interface Ethernet1/3
+      save_when: modified
+
+  - name: Global Config for OSPF on SW1
+    nxos_config:
+      lines:
+        - router ospf 64500
+        - router-id 7.7.7.7
+        - passive-interface default
+        - network 7.7.7.7 0.0.0.0 area 0
+        - network 169.10.10.36 0.0.0.3 area 0
+        - network 169.10.10.40 0.0.0.3 area 0
+      
+      parents: router ospf 64500
+      save_when: modified
+  
+- name: Configuring OSPF for R3
+  hosts: R3
+  gather_facts: false
+  connection: network_cli
+
+  vars:
+    ansible_network_os: ios
+    ansible_python_interpreter: python3
+    ansible_user: admin
+    ansible_password: admin
+    timeout: 100  
+ 
+  tasks:
+  - name: Global Config Ospf for R3
+    ios_config:
+      lines:
+        - router ospf 64500
+        - router-id 3.3.3.3
+        - passive-interface default
+        - no passive-interface fa1/0
+        - network 3.3.3.3 0.0.0.0 area 0
+        - network 169.10.10.36 0.0.0.3 area 0
+          
+      parents: router ospf 64500
+      save_when: modified   
+
+- name: Configuring OSPF for R4
+  hosts: R4
+  gather_facts: false
+  connection: network_cli
+
+  vars:
+    ansible_network_os: ios
+    ansible_python_interpreter: python3
+    ansible_user: admin
+    ansible_password: admin
+    timeout: 100 
+  
+  tasks:  
+  - name: Global Config Ospf for R4
+    ios_config:
+      lines:
+        - router ospf 64500
+        - router-id 4.4.4.4
+        - passive-interface default
+        - no passive-interface fa1/0
+        - network 4.4.4.4 0.0.0.0 area 0
+        - network 169.10.10.40 0.0.0.3 area 0
+          
+      parents: router ospf 64500
+      save_when: modified
+
+    register: print_output
+      
+  - debug: var=print_output
