@@ -1,1 +1,3 @@
-Hello
+Hello_my_friend
+Good Morning
+Good Evening
